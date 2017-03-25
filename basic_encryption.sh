@@ -43,6 +43,6 @@ dcmodify -i $FULL_TAG="$DESCRIPTOR_TAG" "$FILEPATH"
 echo "BUILT DESCRIPTOR TAG: $DESCRIPTOR_TAG"
 echo "ENCRYPTION PASSWORD: $ENC_PASSWORD" 
 echo "UNIQUE_ID: $UNIQUE_ID"
-$KEYFILE="/home/smihajlovic/keys.txt"
+KEYFILE="/home/smihajlovic/keys.txt"
 echo "Dumping key data to keyfile $KEYFILE"
 echo "$UNIQUE_ID,$ENC_PASSWORD" >> $KEYFILE
