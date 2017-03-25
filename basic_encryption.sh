@@ -40,7 +40,9 @@ FULL_TAG="$PRIVATE_TAG_BLOCK,$FULL_TAG"
 DESCRIPTOR_TAG="$UNIQUE_ID,$NEW_TAGS"
 dcmodify -i $FULL_TAG="$DESCRIPTOR_TAG" "$FILEPATH"
 
-echo "$DESCRIPTOR_TAG"
-echo "$ENC_PASSWORD" 
-echo "$UNIQUE_ID"
-echo "$UNIQUE_ID,$ENC_PASSWORD" >> /home/smihajlovic/keys.txt
+echo "BUILT DESCRIPTOR TAG: $DESCRIPTOR_TAG"
+echo "ENCRYPTION PASSWORD: $ENC_PASSWORD" 
+echo "UNIQUE_ID: $UNIQUE_ID"
+$KEYFILE="/home/smihajlovic/keys.txt"
+echo "Dumping key data to keyfile $KEYFILE"
+echo "$UNIQUE_ID,$ENC_PASSWORD" >> $KEYFILE
