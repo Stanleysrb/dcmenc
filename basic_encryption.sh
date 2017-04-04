@@ -14,6 +14,7 @@ if [ -z "$TAGS" ]; then
         TAGS=("0008,0080" "0008,0090" "0008,0060" "0008,0070")
 fi
 
+UNIQUE_ID=`cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 32 | head -n 1`
 ENC_PASSWORD=`cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 128 | head -n 1`
 
 PRIVATE_TAG_BLOCK="0909"
@@ -36,5 +37,10 @@ for TAG in "${TAGS[@]}"; do
 done
 FULL_TAG=$(($PRIVATE_CREATOR*100))
 FULL_TAG="$PRIVATE_TAG_BLOCK,$FULL_TAG"
-dcmodify -i $FULL_TAG="$NEW_TAGS" "$FILEPATH"
-echo "$ENC_PASSWORD"
+DESCRIPTOR_TAG="$UNIQUE_ID,$NEW_TAGS"
+dcmodify -i $FULL_TAG="$DESCRIPTOR_TAG" "$FILEPATH"
+
+echo "$DESCRIPTOR_TAG"
+echo "$ENC_PASSWORD" 
+echo "$UNIQUE_ID"
+echo "$UNIQUE_ID,$ENC_PASSWORD" >> /home/smihajlovic/keys.txt
