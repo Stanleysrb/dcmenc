@@ -10,6 +10,14 @@ while getopts "f:a" arg; do
     esac
 done
 
+if [ -z "$FILEPATH" ]; then 
+	echo "No DICOM file path specified. Exiting"; exit 1;	
+else
+	if [[ ${FILEPATH: -4} != ".dcm" ]]; then
+		echo "Not a .dcm file. Exiting"; exit 1;
+	fi
+fi
+
 if [ -z "$TAGS" ]; then
         TAGS=("0008,0080" "0008,0090" "0008,0060" "0008,0070")
 fi
