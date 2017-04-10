@@ -8,7 +8,7 @@ export DCMDICTPATH=/usr/local/share/dcmtk/dicom.dic:/usr/local/share/dcmtk/priva
 
 while getopts "f:ap:" arg; do
     case "$arg" in
-        a ) TAGS=("0008,0080" "0008,0090");;
+        a ) TAGS=1;;
         f ) FILEPATH="${OPTARG}";;
 	p ) PRIVATE_TAG_BLOCK="${OPTARG}";;
         -- ) ;;
@@ -29,7 +29,12 @@ fi
 #DYNAMIC TAGS, GET ALL TAGS FROM A DICOM FILE AND MAKE AN ARRAY
 
 if [ -z "$TAGS" ]; then
-        TAGS=("0008,0080" "0008,0090" "0008,0060" "0008,0070")
+        TAGS=("0008,0014" "0008,0018" "0008,0050" "0008,0080" "0008,0081" "0008,0090" "0008,0092" "0008,0094" "0008,1010" "0008,1030" "0008,103E" "0008,1040" "0008,1048" "0008,1050" "0008,1060" "0008,1070" "0008,1080" "0008,1155" "0008,2111" "0010,0010" "0010,0020" "0010,0030" "0010,0032" "0010,0040" "0010,1000" "0010,1001" "0010,1010" "0010,1020" "0010,1030" "0010,1090" "0010,2160" "0010,2180" "0010,21B0" "0010,4000" "0018,1000" "0018,1030" "0020,000D" "0020,000E" "0020,0010" "0020,0052" "0020,0200" "0020,4000" "0040,0275" "0040,A124" "0040,A730" "0088,0140" "3006,0024" "3006,00C2")
+	else
+	LINE_NUM=`dcmdump "$FILEPATH" | grep -E '(7fe0,0010)' -i -n | awk -F':' '{print $1}'`
+	LINE_NUM=$((LINE_NUM-1))
+	TEMP_TAGS=`dcmdump "$FILEPATH" | head -n$LINE_NUM | awk -F'[)(]' '{print $2}' | grep '[0-9a-fA-F]\{4\},[0-9a-fA-F]\{4\}' | grep -v '0002,' `
+	IFS=' ' read -r -a TAGS <<< $TEMP_TAGS
 fi
 
 # Generate Unique ID of a file and encryption password:
@@ -73,7 +78,7 @@ for TAG in "${TAGS[@]}"; do
         DATA=`dcmdump +P "$TAG" "$FILEPATH" | awk -F'[][]' '{print $2}' | openssl enc -e -base64 -aes-256-ctr -pass pass:$ENC_PASSWORD`
         echo  "$TAG"
         DATA=$TAG,$DATA
-        dcmodify -m $TAG="ENCRYPTED" "$FILEPATH"
+        dcmodify -m $TAG="" "$FILEPATH"
         echo "TAG:" $TAG "FULL TAG:" $FULL_TAG $FILEPATH
         dcmodify -i "$FULL_TAG"="$DATA" "$FILEPATH"
 done
