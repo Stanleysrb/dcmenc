@@ -71,6 +71,12 @@ NEW_TAGS=""
 dcmodify -i $FULL_CREATOR="DICOM_ENCRYPTION" "$FILEPATH"
 for TAG in "${TAGS[@]}"; do
 	HEX_INCREMENT=$( printf "%02x" $INCREMENT );
+	DATA_EXISTS=`dcmdump +P "$TAG" "$FILEPATH"`
+	if [ -z "$DATA_EXISTS" ]; then
+		echo "TAG EMPTY $TAG"
+		continue;
+	fi
+	echo "TAG $TAG OK!!!"
 	FULL_TAG="$PRIVATE_CREATOR$HEX_INCREMENT"      
 	FULL_TAG="$PRIVATE_TAG_BLOCK,$FULL_TAG"
         NEW_TAGS="$NEW_TAGS$FULL_TAG "
