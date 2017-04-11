@@ -44,7 +44,7 @@ fi
 UNIQUE_ID=`echo $LOCATOR_DATA | awk -F',' '{print $1}'`
 TAGS=`echo $LOCATOR_DATA | awk -F',' '{ st = index($0,",");print substr($0,st+1)}'`
 
-# Check whether password file has been supplied, searching for unique ID, and setting ENC_PASSWORD.
+#SEARCH PASSWORD FILE FOR UNIQUE ID AND INJECT PASSWORD INTO VARIABLE
 if [ ! -z "$PASSWORD_FILE" ]; then
         echo "USING PASSWORD FILE";
 	echo "Searching for the following UNIQUE_ID $UNIQUE_ID"
@@ -56,16 +56,15 @@ fi
 
 
 ARRAY=($TAGS)
-echo ${ARRAY[*]}
+echo $ARRAY
 for TAG in "${ARRAY[@]}"; do
         echo $TAG
         DATA=`dcmdump +L +P "$TAG" "$FILEPATH" | awk -F'[][]' '{print $2}'`
-        ENCRYPTEDDATA=`echo $DATA | awk -F'[, ]' '{print $3}'`
+        ENCRYPTEDDATA=`echo $DATA | awk -F',' '{print $3}'`
         echo $DATA
         echo $ENCRYPTEDDATA
         DECRYPTEDDATA=`echo $ENCRYPTEDDATA | openssl enc -d -base64 -aes-256-ctr -pass pass:$ENC_PASSWORD`
-        echo $DECRYPTEDDATA
-	FULL_TAG=`echo $DATA | awk -F',' '{print $1","$2}'`
+        FULL_TAG=`echo $DATA | awk -F',' '{print $1","$2}'`
         echo $FULL_TAG
         dcmodify -m $FULL_TAG="$DECRYPTEDDATA" "$FILEPATH"
         dcmodify -e $TAG "$FILEPATH"
