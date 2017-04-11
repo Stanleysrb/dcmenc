@@ -62,17 +62,12 @@ INCREMENT=1
 
 # Check whether data already exists:
 echo "Checking for existing data inside Private Tag Block"
-for i in {1..255} 
-do
-	HEX_INCREMENT=$( printf "%02x" $i );
-	FULL_TAG="$PRIVATE_CREATOR$HEX_INCREMENT"
-        FULL_TAG="$PRIVATE_TAG_BLOCK,$FULL_TAG"
-	EXISTING_DATA=`dcmdump +P "$FULL_TAG" "$FILEPATH"`
+
+EXISTING_DATA=`dcmdump +L "$FILEPATH" | grep "($PRIVATE_TAG_BLOCK,$PRIVATE_CREATOR"'[0-9a-fA-F]\{2\}'")"`
 	if [ ! -z "$EXISTING_DATA" ]; then
 	    echo "ERROR: Data already exists, please manually specify Private Tag Block"
 	exit 1;
 	fi
-done
 
 NEW_TAGS=""
 dcmodify -i $FULL_CREATOR="DICOM_ENCRYPTION" "$FILEPATH"

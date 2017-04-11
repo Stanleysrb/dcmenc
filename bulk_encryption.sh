@@ -14,6 +14,9 @@ while getopts "f:ap:e:u:h" arg; do
     esac
 done
 
+DATE=`date`
+echo "start $DATE" >> /home/dcmtk/resources/ANONYMIZE/log.txt
+
 if [ -z "$FOLDER_PATH" ]; then
         echo "No DICOM folder path specified. Exiting"; exit 1;
 else
@@ -26,9 +29,17 @@ fi
 if [ -z "$FILES" ]; then
 	echo "No DICOM files in folder path which was specified. Exiting"; exit 1;
 else
+	callencryption(){
+			/bin/bash /home/root/repo/dcmenc/basic_encryption.sh -f "$1"
+		}
+	N=16
+	(
 	for FILE in "${FILES[@]}"; do
-		echo $FILE
-		/bin/bash ./basic_encryption.sh -f "$FILE"
-
+		((i=i%N)); ((i++==0)) && wait
+		callencryption "$FILE" &
 	done
+	)
 fi
+
+DATE=`date`
+echo "end $DATE" >> /home/dcmtk/resources/ANONYMIZE/log.txt
