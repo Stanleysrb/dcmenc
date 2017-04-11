@@ -6,7 +6,7 @@ export DCMDICTPATH=/usr/local/share/dcmtk/dicom.dic:/usr/local/share/dcmtk/priva
 
 # Get command options and process them:
 
-while getopts "f:ap:h" arg; do
+while getopts "f:ap:e:u:h" arg; do
     case "$arg" in
         a ) TAGS=1;;
         f ) FILEPATH="${OPTARG}";;
