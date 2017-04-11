@@ -21,6 +21,12 @@ done
 
 # Check whether file path has been specified, and whether file has extension ".dcm".
 
+
+#
+# Insert thread level logging!!!
+#
+
+
 if [ -z "$FILEPATH" ]; then 
 	echo "No DICOM file path specified. Exiting"; exit 1;	
 else

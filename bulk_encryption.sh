@@ -29,16 +29,14 @@ fi
 if [ -z "$FILES" ]; then
 	echo "No DICOM files in folder path which was specified. Exiting"; exit 1;
 else
-	callencryption(){
-			/bin/bash /home/root/repo/dcmenc/basic_encryption.sh -f "$1"
-		}
-	N=16
-	(
-	for FILE in "${FILES[@]}"; do
-		((i=i%N)); ((i++==0)) && wait
-		callencryption "$FILE" &
-	done
-	)
+#	JOBS=()
+#	for FILE in "${FILES[@]}"; do
+#		JOBS+=("/bin/bash /home/root/repo/dcmenc/basic_encryption.sh -f \"$FILE\"")
+#	done
+#	printf '%s\n' "${JOBS[@]}" | 
+
+# find "$FOLDER_PATH" -name "*.dcm" -print0 | xargs -0 -n 1 -I file bash -c /home/root/repo/dcmenc/basic_encryption.sh -f filei
+	find "$FOLDER_PATH" -name "*.dcm" -print0 | xargs -0 -P 1 -n 1 -I file /bin/bash /home/root/repo/dcmenc/basic_encryption.sh -f file > /home/dcmtk/logs/log.txt
 fi
 
 DATE=`date`
