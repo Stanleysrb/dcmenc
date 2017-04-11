@@ -4,16 +4,15 @@ export DCMDICTPATH=/usr/local/share/dcmtk/dicom.dic:/usr/local/share/dcmtk/priva
 
 # Get command options and process them:
 
-while getopts "f:p:e:u:d:h" arg; do
+while getopts "f:p:e:d:h" arg; do
     case "$arg" in
         f ) FILEPATH="${OPTARG}";;
 	p ) PRIVATE_TAG_BLOCK="${OPTARG}";;
 	e ) ENC_PASSWORD="${OPTARG}";;
-	u ) UNIQUE_ID="${OPTARG}";;
 	d ) PASSWORD_FILE="${OPTARG}";;
 	h ) echo "HELP TEXT GOES HERE, WILL BE DEFINED WHEN ALL OTHER THINGS ARE DONE"; exit 1;;
         -- ) ;;
-        * ) if [ -z "$1" ]; then break; else echo "$1 is not a valid option"; exit 1; fi;;
+        * ) if [ -z "$1" ]; then break; else echo "$1 is not a valid option. Use -h for help."; exit 1; fi;;
     esac
 done
 
