@@ -1,9 +1,5 @@
 #!/bin/bash
 
-# export variable - path to private dictionary:
-
-export DCMDICTPATH=/usr/local/share/dcmtk/dicom.dic:/usr/local/share/dcmtk/private.dic:/usr/local/share/dcmtk/diconde.dic:/home/dcmtk/resources/private.dic
-
 # Get command options and process them:
 
 while getopts "f:ap:e:u:h" arg; do
@@ -92,6 +88,7 @@ for TAG in "${TAGS[@]}"; do
 	FULL_TAG="$PRIVATE_TAG_BLOCK,$FULL_TAG"
         NEW_TAGS="$NEW_TAGS$FULL_TAG "
         INCREMENT=$((INCREMENT+1))
+# DO NOT READ DATA HERE, SINCE IT HAS BEEN READ BEFORE ON LINE 85
         DATA=`dcmdump +P "$TAG" "$FILEPATH" | awk -F'[][]' '{print $2}' | openssl enc -e -base64 -aes-256-ctr -pass pass:$ENC_PASSWORD`
         echo  "$TAG"
         DATA=$TAG,$DATA

@@ -50,7 +50,7 @@ else
 # find "$FOLDER_PATH" -name "*.dcm" -print0 | xargs -0 -n 1 -I file bash -c /home/root/repo/dcmenc/basic_encryption.sh -f filei
 #	find "$FOLDER_PATH" -name "*.dcm" -print0 | xargs -0 -P 1 -n 1 -I file /bin/bash /home/root/repo/dcmenc/basic_encryption.sh -f file > /home/dcmtk/logs/log.txt
 
-find "$FOLDER_PATH" -name "*.dcm" | parallel --joblog /home/smihajlovic/joblog.txt --bar -j 16 /bin/bash /home/root/repo/dcmenc/basic_encryption.sh $INPUT_ARGS -f 
+find "$FOLDER_PATH" -name "*.dcm" | parallel --joblog /home/smihajlovic/joblog.txt --bar -j 4 /bin/bash /home/root/repo/dcmenc/basic_encryption.sh $INPUT_ARGS -f 
 
 fi
 

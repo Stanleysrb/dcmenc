@@ -1,6 +1,4 @@
 #!/bin/bash
-export DCMDICTPATH=/usr/local/share/dcmtk/dicom.dic:/usr/local/share/dcmtk/private.dic:/usr/local/share/dcmtk/diconde.dic:/home/dcmtk/resources/private.dic
-
 
 # Get command options and process them:
 
@@ -53,6 +51,7 @@ if [ ! -z "$PASSWORD_FILE" ]; then
 	fi
 fi
 
+# Put password file variable , possibly in variables file
 
 ARRAY=($TAGS)
 echo ${ARRAY[*]}
