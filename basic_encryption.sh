@@ -89,7 +89,7 @@ for TAG in "${TAGS[@]}"; do
         NEW_TAGS="$NEW_TAGS$FULL_TAG "
         INCREMENT=$((INCREMENT+1))
 # DO NOT READ DATA HERE, SINCE IT HAS BEEN READ BEFORE ON LINE 85
-        DATA=`dcmdump +P "$TAG" "$FILEPATH" | awk -F'[][]' '{print $2}' | openssl enc -e -base64 -aes-256-ctr -pass pass:$ENC_PASSWORD`
+        DATA=`echo $DATA_EXISTS | awk -F'[][]' '{print $2}' | openssl enc -e -base64 -aes-256-ctr -pass pass:$ENC_PASSWORD`
         echo  "$TAG"
         DATA=$TAG,$DATA
         dcmodify -m $TAG="" "$FILEPATH"
