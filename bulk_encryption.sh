@@ -26,6 +26,18 @@ else
 	done < <(find "$FOLDER_PATH" -name "*.dcm" -print0)        
 fi
 
+# Variable to concatenate all input arguments like -e -p etc.
+INPUT_ARGS=""
+
+if [ ! -z "$PRIVATE_TAG_BLOCK" ]; then
+	INPUT_ARGS="-p $PRIVATE_TAG_BLOCK"
+fi
+
+if [ ! -z "$ENC_PASSWORD" ]; then
+	INPUT_ARGS="$INPUT_ARGS -e $ENC_PASSWORD"
+fi
+
+
 if [ -z "$FILES" ]; then
 	echo "No DICOM files in folder path which was specified. Exiting"; exit 1;
 else
@@ -38,7 +50,7 @@ else
 # find "$FOLDER_PATH" -name "*.dcm" -print0 | xargs -0 -n 1 -I file bash -c /home/root/repo/dcmenc/basic_encryption.sh -f filei
 #	find "$FOLDER_PATH" -name "*.dcm" -print0 | xargs -0 -P 1 -n 1 -I file /bin/bash /home/root/repo/dcmenc/basic_encryption.sh -f file > /home/dcmtk/logs/log.txt
 
-find "$FOLDER_PATH" -name "*.dcm" | parallel --joblog /home/smihajlovic/joblog.txt --bar -j 181 /bin/bash /home/root/repo/dcmenc/basic_encryption.sh -f
+find "$FOLDER_PATH" -name "*.dcm" | parallel --joblog /home/smihajlovic/joblog.txt --bar -j 16 /bin/bash /home/root/repo/dcmenc/basic_encryption.sh $INPUT_ARGS -f 
 
 fi
 
