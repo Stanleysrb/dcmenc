@@ -21,8 +21,8 @@ done
 #
 # Insert thread level logging!!!
 #
-
-
+echo "getopts end" >> /home/smihajlovic/out.txt
+echo $(($(date +%s%N)/1000000)) >> /home/smihajlovic/out.txt
 if [ -z "$FILEPATH" ]; then 
 	echo "No DICOM file path specified. Exiting"; exit 1;	
 else
@@ -31,6 +31,7 @@ else
 	fi
 fi
 
+echo $(($(date +%s%N)/1000000)) >> /home/smihajlovic/out.txt
 #Dynamic tags, get all tags from a file except meta and pixel data, if parameter "-a" has been supplied, if not, standard set of tags is supplied by DICOM anonymization standard.
 
 if [ -z "$TAGS" ]; then
@@ -42,6 +43,7 @@ if [ -z "$TAGS" ]; then
 	IFS=' ' read -r -a TAGS <<< $TEMP_TAGS
 fi
 
+echo $(($(date +%s%N)/1000000)) >> /home/smihajlovic/out.txt
 # Generate Unique ID of a file and encryption password if not supplied manually:
 
 if [ -z "$UNIQUE_ID" ]; then
@@ -51,7 +53,7 @@ fi
 if [ -z "$ENC_PASSWORD" ]; then
 	ENC_PASSWORD=`cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 128 | head -n 1`
 fi
-
+echo $(($(date +%s%N)/1000000)) >> /home/smihajlovic/out.txt
 # Check whether Private Tag block has been manually specified:
 
 if [ -z "$PRIVATE_TAG_BLOCK" ]; then
@@ -70,7 +72,7 @@ EXISTING_DATA=`dcmdump +L "$FILEPATH" | grep "($PRIVATE_TAG_BLOCK,$PRIVATE_CREAT
 	    echo "ERROR: Data already exists, please manually specify Private Tag Block"
 	exit 1;
 	fi
-
+echo $(($(date +%s%N)/1000000)) >> /home/smihajlovic/out.txt
 NEW_TAGS=""
 dcmodify -i $FULL_CREATOR="DICOM_ENCRYPTION" "$FILEPATH"
 for TAG in "${TAGS[@]}"; do
@@ -78,24 +80,33 @@ for TAG in "${TAGS[@]}"; do
 
 # Check if tag is empty
 
-	DATA_EXISTS=`dcmdump +P "$TAG" "$FILEPATH"`
+	DATA_EXISTS=`dcmdump +L +P "$TAG" "$FILEPATH"`
 	if [ -z "$DATA_EXISTS" ]; then
 		echo "TAG EMPTY $TAG"
+	        echo "encryption skip" $(($(date +%s%N)/1000000)) >> /home/smihajlovic/out.txt
 		continue;
+	fi
+	DATA=`echo $DATA_EXISTS | awk -F'[][]' '{print $2}'`
+        echo "encryption start" $(($(date +%s%N)/1000000)) >> /home/smihajlovic/out.txt
+	if [ -z "$DATA" ]; then
+		DATA=`dcm2xml "$FILEPATH" | grep "tag=\"${TAG}\"" | awk  'BEGIN {RS="<[^>]+>"} {print $0}' | openssl enc -e -base64 -A -aes-256-ctr -pass pass:$ENC_PASSWORD`
+	else
+		DATA=`echo $DATA_EXISTS | awk -F'[][]' '{print $2}' | openssl enc -e -base64 -A -aes-256-ctr -pass pass:$ENC_PASSWORD`
 	fi
 	echo "TAG $TAG OK!!!"
 	FULL_TAG="$PRIVATE_CREATOR$HEX_INCREMENT"      
 	FULL_TAG="$PRIVATE_TAG_BLOCK,$FULL_TAG"
         NEW_TAGS="$NEW_TAGS$FULL_TAG "
         INCREMENT=$((INCREMENT+1))
-# DO NOT READ DATA HERE, SINCE IT HAS BEEN READ BEFORE ON LINE 85
-        DATA=`echo $DATA_EXISTS | awk -F'[][]' '{print $2}' | openssl enc -e -base64 -aes-256-ctr -pass pass:$ENC_PASSWORD`
-        echo  "$TAG"
-        DATA=$TAG,$DATA
+        echo "$TAG"
+	DATA=$TAG,$DATA
         dcmodify -m $TAG="" "$FILEPATH"
         echo "TAG:" $TAG "FULL TAG:" $FULL_TAG $FILEPATH
         dcmodify -i "$FULL_TAG"="$DATA" "$FILEPATH"
+        echo "encryption end" $(($(date +%s%N)/1000000)) >> /home/smihajlovic/out.txt
+
 done
+echo $(($(date +%s%N)/1000000)) >> /home/smihajlovic/out.txt
 FULL_TAG=$(($PRIVATE_CREATOR*100))
 FULL_TAG="$PRIVATE_TAG_BLOCK,$FULL_TAG"
 DESCRIPTOR_TAG="$UNIQUE_ID,$NEW_TAGS"

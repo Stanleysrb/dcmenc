@@ -68,7 +68,7 @@ for TAG in "${ARRAY[@]}"; do
         ENCRYPTEDDATA=`echo $DATA | awk -F'[, ]' '{print $3}'`
         echo $DATA
         echo $ENCRYPTEDDATA
-        DECRYPTEDDATA=`echo $ENCRYPTEDDATA | openssl enc -d -base64 -aes-256-ctr -pass pass:$ENC_PASSWORD`
+        DECRYPTEDDATA=`echo $ENCRYPTEDDATA | openssl enc -d -base64 -A -aes-256-ctr -pass pass:$ENC_PASSWORD`
         echo $DECRYPTEDDATA
 	FULL_TAG=`echo $DATA | awk -F',' '{print $1","$2}'`
         echo $FULL_TAG
