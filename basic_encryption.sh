@@ -74,12 +74,13 @@ EXISTING_DATA=`dcmdump +L "$FILEPATH" | grep "($PRIVATE_TAG_BLOCK,$PRIVATE_CREAT
 	fi
 echo $(($(date +%s%N)/1000000)) >> /home/smihajlovic/out.txt
 NEW_TAGS=""
+OLD_TAGS=""
+NEW_TAGS_DATA=""
 dcmodify -i $FULL_CREATOR="DICOM_ENCRYPTION" "$FILEPATH"
 for TAG in "${TAGS[@]}"; do
 	HEX_INCREMENT=$( printf "%02x" $INCREMENT );
 
 # Check if tag is empty
-
 	DATA_EXISTS=`dcmdump +L +P "$TAG" "$FILEPATH"`
 	if [ -z "$DATA_EXISTS" ]; then
 		echo "TAG EMPTY $TAG"
@@ -100,12 +101,20 @@ for TAG in "${TAGS[@]}"; do
         INCREMENT=$((INCREMENT+1))
         echo "$TAG"
 	DATA=$TAG,$DATA
-        dcmodify -m $TAG="" "$FILEPATH"
+	OLD_TAGS="$OLD_TAGS -e $TAG" 
+	echo "OLD TAGS:" $OLD_TAGS
+      #  dcmodify -m $TAG="" "$FILEPATH"
         echo "TAG:" $TAG "FULL TAG:" $FULL_TAG $FILEPATH
-        dcmodify -i "$FULL_TAG"="$DATA" "$FILEPATH"
+        NEW_TAGS_DATA="$NEW_TAGS_DATA -i $FULL_TAG=$DATA"
+	echo "NEW tags data" $NEW_TAGS_DATA
+	# dcmodify -i "$FULL_TAG"="$DATA" "$FILEPATH"
         echo "encryption end" $(($(date +%s%N)/1000000)) >> /home/smihajlovic/out.txt
-
 done
+
+echo "REMOVING OLD TAG DATA"
+dcmodify $OLD_TAGS "$FILEPATH"
+#echo "dcmodify" $NEW_TAG_DATA "$FILEPATH"
+dcmodify $NEW_TAGS_DATA "$FILEPATH"
 echo $(($(date +%s%N)/1000000)) >> /home/smihajlovic/out.txt
 FULL_TAG=$(($PRIVATE_CREATOR*100))
 FULL_TAG="$PRIVATE_TAG_BLOCK,$FULL_TAG"
