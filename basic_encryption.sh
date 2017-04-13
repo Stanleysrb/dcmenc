@@ -95,9 +95,9 @@ for TAG in "${TAGS[@]}"; do
 		DATA=`echo $DATA_EXISTS | awk -F'[][]' '{print $2}' | openssl enc -e -base64 -A -aes-256-ctr -pass pass:$ENC_PASSWORD`
 	fi
 	echo "TAG $TAG OK!!!"
-#	FULL_TAG="$PRIVATE_TAG_BLOCK,$PRIVATE_CREATOR$HEX_INCREMENT"      
+	FULL_TAG="$PRIVATE_TAG_BLOCK,$PRIVATE_CREATOR$HEX_INCREMENT"      
 #	FULL_TAG="$PRIVATE_TAG_BLOCK,$FULL_TAG"
-        NEW_TAGS="$NEW_TAGS$PRIVATE_TAG_BLOCK,$PRIVATE_CREATOR$HEX_INCREMENT "
+        NEW_TAGS="$NEW_TAGS$FULL_TAG "
         INCREMENT=$((INCREMENT+1))
 #        echo "$TAG"
 	DATA=$TAG,$DATA
@@ -126,4 +126,4 @@ dcmodify -i $FULL_TAG="$DESCRIPTOR_TAG" "$FILEPATH"
 #echo "ENCRYPTION PASSWORD: $ENC_PASSWORD" 
 #echo "UNIQUE_ID: $UNIQUE_ID"
 #echo "Dumping key data to keyfile $KEYFILE"
-#echo "$UNIQUE_ID,$ENC_PASSWORD" >> $KEYFILE
+echo "$UNIQUE_ID,$ENC_PASSWORD" >> $KEYFILE
