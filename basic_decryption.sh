@@ -72,7 +72,7 @@ for TAG in "${ARRAY[@]}"; do
         echo $DECRYPTEDDATA
 	FULL_TAG=`echo $DATA | awk -F',' '{print $1","$2}'`
         echo $FULL_TAG
-        dcmodify -m $FULL_TAG="$DECRYPTEDDATA" "$FILEPATH"
+        dcmodify -i $FULL_TAG="$DECRYPTEDDATA" "$FILEPATH"
         dcmodify -e $TAG "$FILEPATH"
 done
 dcmodify -e $FULL_CREATOR "$FILEPATH"

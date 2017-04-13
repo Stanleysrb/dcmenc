@@ -95,34 +95,35 @@ for TAG in "${TAGS[@]}"; do
 		DATA=`echo $DATA_EXISTS | awk -F'[][]' '{print $2}' | openssl enc -e -base64 -A -aes-256-ctr -pass pass:$ENC_PASSWORD`
 	fi
 	echo "TAG $TAG OK!!!"
-	FULL_TAG="$PRIVATE_CREATOR$HEX_INCREMENT"      
-	FULL_TAG="$PRIVATE_TAG_BLOCK,$FULL_TAG"
-        NEW_TAGS="$NEW_TAGS$FULL_TAG "
+#	FULL_TAG="$PRIVATE_TAG_BLOCK,$PRIVATE_CREATOR$HEX_INCREMENT"      
+#	FULL_TAG="$PRIVATE_TAG_BLOCK,$FULL_TAG"
+        NEW_TAGS="$NEW_TAGS$PRIVATE_TAG_BLOCK,$PRIVATE_CREATOR$HEX_INCREMENT "
         INCREMENT=$((INCREMENT+1))
-        echo "$TAG"
+#        echo "$TAG"
 	DATA=$TAG,$DATA
 	OLD_TAGS="$OLD_TAGS -e $TAG" 
-	echo "OLD TAGS:" $OLD_TAGS
+#	echo "OLD TAGS:" $OLD_TAGS
       #  dcmodify -m $TAG="" "$FILEPATH"
-        echo "TAG:" $TAG "FULL TAG:" $FULL_TAG $FILEPATH
+ #       echo "TAG:" $TAG "FULL TAG:" $FULL_TAG $FILEPATH
         NEW_TAGS_DATA="$NEW_TAGS_DATA -i $FULL_TAG=$DATA"
-	echo "NEW tags data" $NEW_TAGS_DATA
+#	echo "NEW tags data" $NEW_TAGS_DATA
 	# dcmodify -i "$FULL_TAG"="$DATA" "$FILEPATH"
-        echo "encryption end" $(($(date +%s%N)/1000000)) >> /home/smihajlovic/out.txt
+ #       echo "encryption end" $(($(date +%s%N)/1000000)) >> /home/smihajlovic/out.txt
 done
 
 echo "REMOVING OLD TAG DATA"
 dcmodify $OLD_TAGS "$FILEPATH"
 #echo "dcmodify" $NEW_TAG_DATA "$FILEPATH"
+echo "Inserting new values in new tags"
 dcmodify $NEW_TAGS_DATA "$FILEPATH"
-echo $(($(date +%s%N)/1000000)) >> /home/smihajlovic/out.txt
+#echo $(($(date +%s%N)/1000000)) >> /home/smihajlovic/out.txt
 FULL_TAG=$(($PRIVATE_CREATOR*100))
 FULL_TAG="$PRIVATE_TAG_BLOCK,$FULL_TAG"
 DESCRIPTOR_TAG="$UNIQUE_ID,$NEW_TAGS"
 dcmodify -i $FULL_TAG="$DESCRIPTOR_TAG" "$FILEPATH"
 
-echo "BUILT DESCRIPTOR TAG: $DESCRIPTOR_TAG"
-echo "ENCRYPTION PASSWORD: $ENC_PASSWORD" 
-echo "UNIQUE_ID: $UNIQUE_ID"
-echo "Dumping key data to keyfile $KEYFILE"
-echo "$UNIQUE_ID,$ENC_PASSWORD" >> $KEYFILE
+#echo "BUILT DESCRIPTOR TAG: $DESCRIPTOR_TAG"
+#echo "ENCRYPTION PASSWORD: $ENC_PASSWORD" 
+#echo "UNIQUE_ID: $UNIQUE_ID"
+#echo "Dumping key data to keyfile $KEYFILE"
+#echo "$UNIQUE_ID,$ENC_PASSWORD" >> $KEYFILE
