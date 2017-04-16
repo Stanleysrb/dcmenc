@@ -90,7 +90,7 @@ for TAG in "${TAGS[@]}"; do
 		echo $CUTTER
 		TAG=`echo $TAG | cut -c $CUTTER-`
 		DATA_EXISTS=`dcmdump +L +P "$TAG" +p "$FILEPATH" | grep "$LONG_TAG_CHECKER"`
-		echo $DATA_EXISTS
+		echo "DATA_EXISTS:" $DATA_EXISTS
                 #REVERT TAG TO LONG VALUE
                 TAG=`echo $LONG_TAG | awk '{ gsub("\\\.",")[0].("); print $0}'`
                 TAG="("$TAG")"
@@ -98,9 +98,15 @@ for TAG in "${TAGS[@]}"; do
 	else
 		echo "TAG" $TAG "is short"
 		DATA_EXISTS=`dcmdump +L +P "$TAG" "$FILEPATH"`
+		echo "DATA_EXISTS:" $DATA_EXISTS
+		ROW_COUNT=`echo $DATA_EXISTS | grep -e '\s#\s[0-9]*,\s[0-9]*\s[a-zA-Z0-9]*\s([0-9a-fA-F]\{4\},[0-9a-fA-F]\{4\})' -o | wc -l`
+		if [ $ROW_COUNT -gt 1 ]; then
+			echo "Warning: Multiple rows for tag, skipping tag $TAG"
+			continue;
+		fi
 	fi
 # Check if tag is empty
-	if [ -z "$DATA_EXISTS" ]; then
+	if [ -z "$DATA_EXISTS"  ] || [[ $(echo $DATA_EXISTS | grep -e '([0-9a-fA-F]\{4\},[0-9a-fA-F]\{4\})\s.\{2\}\s(no value available)\s#') ]]; then
 		echo "TAG EMPTY $TAG"
 	        echo "encryption skip" $(($(date +%s%N)/1000000)) >> /home/smihajlovic/out.txt
 		continue;
@@ -131,17 +137,17 @@ for TAG in "${TAGS[@]}"; do
 done
 
 echo "REMOVING OLD TAG DATA"
-dcmodify "$FILEPATH" $OLD_TAGS -v
+dcmodify -nb "$FILEPATH" $OLD_TAGS -v
 echo "$OLD_TAGS" \'$FILEPATH\'
 #echo "dcmodify" $NEW_TAG_DATA "$FILEPATH"
 echo "Inserting new values in new tags"
-dcmodify $NEW_TAGS_DATA "$FILEPATH"
+dcmodify -nb $NEW_TAGS_DATA "$FILEPATH"
 #echo $(($(date +%s%N)/1000000)) >> /home/smihajlovic/out.txt
 FULL_TAG=$(($PRIVATE_CREATOR*100))
 FULL_TAG="$PRIVATE_TAG_BLOCK,$FULL_TAG"
 DESCRIPTOR_TAG="$UNIQUE_ID,$NEW_TAGS"
 echo "dcmodify -i" "$FULL_TAG=""$DESCRIPTOR_TAG" "$FILEPATH"
-dcmodify -i $FULL_TAG="$DESCRIPTOR_TAG" "$FILEPATH"
+dcmodify -nb -i $FULL_TAG="$DESCRIPTOR_TAG" "$FILEPATH"
 
 #echo "BUILT DESCRIPTOR TAG: $DESCRIPTOR_TAG"
 #echo "ENCRYPTION PASSWORD: $ENC_PASSWORD" 

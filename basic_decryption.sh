@@ -64,17 +64,17 @@ ARRAY=($TAGS)
 echo ${ARRAY[*]}
 for TAG in "${ARRAY[@]}"; do
         echo $TAG
-        DATA=`dcmdump +L +P "$TAG" "$FILEPATH" | awk -F'[][]' '{print $2}'`
-        ENCRYPTEDDATA=`echo $DATA | awk -F'[, ]' '{print $3}'`
-        echo $DATA
-        echo $ENCRYPTEDDATA
+        DATA=`dcmdump +L +P "$TAG" "$FILEPATH" | cut -c 17- | awk -F'][[:space:]]+#[[:space:]]' '{print $1}'`
+        ENCRYPTEDDATA=`echo $DATA | awk -F'[,]' '{print $NF}'`
+        echo "DATA IS:" $DATA
+        echo "ENCRYPTED DATA IS:" $ENCRYPTEDDATA
         DECRYPTEDDATA=`echo $ENCRYPTEDDATA | openssl enc -d -base64 -A -aes-256-ctr -pass pass:$ENC_PASSWORD`
-        echo $DECRYPTEDDATA
-	FULL_TAG=`echo $DATA | awk -F',' '{print $1","$2}'`
-        echo $FULL_TAG
-        dcmodify -i $FULL_TAG="$DECRYPTEDDATA" "$FILEPATH"
-        dcmodify -e $TAG "$FILEPATH"
+        echo "DECRYPTED DATA IS: " $DECRYPTEDDATA
+	FULL_TAG=`echo $DATA | awk 'BEGIN{FS=OFS=","}{NF--;print}'`
+        echo "FULL TAG IS:" $FULL_TAG
+        dcmodify -nb -i "$FULL_TAG"="$DECRYPTEDDATA" "$FILEPATH"
+        dcmodify -nb -e $TAG "$FILEPATH"
 done
-dcmodify -e $FULL_CREATOR "$FILEPATH"
-dcmodify -e $PRIVATE_TAG_LOCATION "$FILEPATH"
+dcmodify -nb -e $FULL_CREATOR "$FILEPATH"
+dcmodify -nb -e $PRIVATE_TAG_LOCATION "$FILEPATH"
 
