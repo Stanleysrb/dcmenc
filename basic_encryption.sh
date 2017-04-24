@@ -21,8 +21,6 @@ done
 #
 # Insert thread level logging!!!
 #
-echo "getopts end" >> /home/smihajlovic/out.txt
-echo $(($(date +%s%N)/1000000)) >> /home/smihajlovic/out.txt
 if [ -z "$FILEPATH" ]; then 
 	echo "No DICOM file path specified. Exiting"; exit 1;	
 else
@@ -31,7 +29,6 @@ else
 	fi
 fi
 
-echo $(($(date +%s%N)/1000000)) >> /home/smihajlovic/out.txt
 #Dynamic tags, get all tags from a file except meta and pixel data, if parameter "-a" has been supplied, if not, standard set of tags is supplied by DICOM anonymization standard.
 
 if [ -z "$TAGS" ]; then
@@ -43,7 +40,6 @@ if [ -z "$TAGS" ]; then
 	IFS=' ' read -r -a TAGS <<< $TEMP_TAGS
 fi
 
-echo $(($(date +%s%N)/1000000)) >> /home/smihajlovic/out.txt
 # Generate Unique ID of a file and encryption password if not supplied manually:
 
 if [ -z "$UNIQUE_ID" ]; then
@@ -53,7 +49,6 @@ fi
 if [ -z "$ENC_PASSWORD" ]; then
 	ENC_PASSWORD=`cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 128 | head -n 1`
 fi
-echo $(($(date +%s%N)/1000000)) >> /home/smihajlovic/out.txt
 # Check whether Private Tag block has been manually specified:
 
 if [ -z "$PRIVATE_TAG_BLOCK" ]; then
@@ -73,7 +68,6 @@ EXISTING_DATA=`dcmdump +L "$FILEPATH" | grep "($PRIVATE_TAG_BLOCK,$PRIVATE_CREAT
 	    echo "ERROR: Data already exists, please manually specify Private Tag Block"
 	exit 1;
 	fi
-echo $(($(date +%s%N)/1000000)) >> /home/smihajlovic/out.txt
 NEW_TAGS=""
 OLD_TAGS=""
 NEW_TAGS_DATA=""
@@ -108,11 +102,9 @@ for TAG in "${TAGS[@]}"; do
 # Check if tag is empty
 	if [ -z "$DATA_EXISTS"  ] || [[ $(echo $DATA_EXISTS | grep -e '([0-9a-fA-F]\{4\},[0-9a-fA-F]\{4\})\s.\{2\}\s(no value available)\s#') ]]; then
 		echo "TAG EMPTY $TAG"
-	        echo "encryption skip" $(($(date +%s%N)/1000000)) >> /home/smihajlovic/out.txt
 		continue;
 	fi
 	DATA=`echo $DATA_EXISTS | awk -F'[][]' '{print $2}'`
-        echo "encryption start" $(($(date +%s%N)/1000000)) >> /home/smihajlovic/out.txt
 	if [ -z "$DATA" ]; then
 		DATA=`dcm2xml "$FILEPATH" | grep "tag=\"${TAG}\"" | awk  'BEGIN {RS="<[^>]+>"} {print $0}' | openssl enc -e -base64 -A -aes-256-ctr -pass pass:$ENC_PASSWORD`
 	else
@@ -133,7 +125,6 @@ for TAG in "${TAGS[@]}"; do
         NEW_TAGS_DATA="$NEW_TAGS_DATA -i $FULL_TAG=$DATA"
 #	echo "NEW tags data" $NEW_TAGS_DATA
 	# dcmodify -i "$FULL_TAG"="$DATA" "$FILEPATH"
- #       echo "encryption end" $(($(date +%s%N)/1000000)) >> /home/smihajlovic/out.txt
 done
 
 echo "REMOVING OLD TAG DATA"
@@ -142,7 +133,6 @@ echo "$OLD_TAGS" \'$FILEPATH\'
 #echo "dcmodify" $NEW_TAG_DATA "$FILEPATH"
 echo "Inserting new values in new tags"
 dcmodify -nb $NEW_TAGS_DATA "$FILEPATH"
-#echo $(($(date +%s%N)/1000000)) >> /home/smihajlovic/out.txt
 FULL_TAG=$(($PRIVATE_CREATOR*100))
 FULL_TAG="$PRIVATE_TAG_BLOCK,$FULL_TAG"
 DESCRIPTOR_TAG="$UNIQUE_ID,$NEW_TAGS"
