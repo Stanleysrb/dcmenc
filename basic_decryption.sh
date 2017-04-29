@@ -69,7 +69,7 @@ for TAG in "${ARRAY[@]}"; do
         echo "DATA IS:" $DATA
         echo "ENCRYPTED DATA IS:" $ENCRYPTEDDATA
         DECRYPTEDDATA=`echo $ENCRYPTEDDATA | openssl enc -d -base64 -A -aes-256-ctr -pass pass:$ENC_PASSWORD`
-        echo "DECRYPTED DATA IS: " $DECRYPTEDDATA
+        echo "DECRYPTED DATA IS: $DECRYPTEDDATA"
 	FULL_TAG=`echo $DATA | awk 'BEGIN{FS=OFS=","}{NF--;print}'`
         echo "FULL TAG IS:" $FULL_TAG
         dcmodify -nb -i "$FULL_TAG"="$DECRYPTEDDATA" "$FILEPATH"

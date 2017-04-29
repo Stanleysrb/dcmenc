@@ -40,16 +40,8 @@ fi
 if [ -z "$FILES" ]; then
 	echo "No DICOM files in folder path which was specified. Exiting"; exit 1;
 else
-#	JOBS=()
-#	for FILE in "${FILES[@]}"; do
-#		JOBS+=("/bin/bash /home/root/repo/dcmenc/basic_encryption.sh -f \"$FILE\"")
-#	done
-#	printf '%s\n' "${JOBS[@]}" | 
 
-# find "$FOLDER_PATH" -name "*.dcm" -print0 | xargs -0 -n 1 -I file bash -c /home/root/repo/dcmenc/basic_encryption.sh -f filei
-#	find "$FOLDER_PATH" -name "*.dcm" -print0 | xargs -0 -P 1 -n 1 -I file /bin/bash /home/root/repo/dcmenc/basic_encryption.sh -f file > /home/dcmtk/logs/log.txt
-
-find "$FOLDER_PATH" -name "*.dcm" | parallel --joblog $JOBLOG --bar -j 16 /bin/bash $DCMENCHOME/basic_decryption.sh $INPUT_ARGS -f 
+find "$FOLDER_PATH" -name "*.dcm" | parallel --joblog $JOBLOG --bar -j 4 /bin/bash $DCMENCHOME/basic_decryption.sh $INPUT_ARGS -f 
 
 fi
 
