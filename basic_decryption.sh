@@ -60,6 +60,18 @@ else
 fi
 # Put password file variable , possibly in variables file
 
+if [ ${#ENC_PASSWORD} = 192 ]; then
+        ALLOWED_LEVEL=3
+elif [ ${#ENC_PASSWORD} = 128 ]; then
+        ALLOWED_LEVEL=2
+elif [ ${#ENC_PASSWORD} = 64 ]; then
+        ALLOWED_LEVEL=1
+else
+        echo "BAD PASSWORD LENGTH, EXITING!"
+        exit;
+fi
+echo "ALLOWED LEVEL:" $ALLOWED_LEVEL
+
 ARRAY=($TAGS)
 echo ${ARRAY[*]}
 for TAG in "${ARRAY[@]}"; do
@@ -69,7 +81,11 @@ for TAG in "${ARRAY[@]}"; do
         echo "DATA IS:" $DATA
         echo "ENCRYPTED DATA IS:" $ENCRYPTEDDATA
         CONFIDENTIALITY_LEVEL="${DATA:0:1}"
-        echo "CONFIDENTIALITY_LEVEL: " $CONFIDENTIALITY_LEVEL 
+        echo "CONFIDENTIALITY_LEVEL: " $CONFIDENTIALITY_LEVEL
+        if [ $CONFIDENTIALITY_LEVEL -gt $ALLOWED_LEVEL ]; then 
+            echo "No password for this confidentiality level, skipping"
+            continue;
+        fi
         TEMP_ENC_PASSWORD=`echo $ENC_PASSWORD | cut -c $(($CONFIDENTIALITY_LEVEL*64-63))-$(($CONFIDENTIALITY_LEVEL*64))`
         DECRYPTEDDATA=`echo $ENCRYPTEDDATA | openssl enc -d -base64 -A -aes-256-ctr -pass pass:$TEMP_ENC_PASSWORD`
         echo "DECRYPTED DATA IS: $DECRYPTEDDATA"

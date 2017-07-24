@@ -2,12 +2,13 @@
 
 # Get command options and process them:
 
-while getopts "f:p:e:u:h" arg; do
+while getopts "f:p:e:u:ih" arg; do
     case "$arg" in
         f ) FILEPATH="${OPTARG}";;
         p ) PRIVATE_TAG_BLOCK="${OPTARG}";;
         e ) ENC_PASSWORD="${OPTARG}";;
         u ) UNIQUE_ID="${OPTARG}";;
+	i ) IGNORE_PW="1";;
         h ) echo "HELP TEXT GOES HERE, WILL BE DEFINED WHEN ALL OTHER THINGS ARE DONE"; exit 1;;
         -- ) ;;
         * ) if [ -z "$1" ]; then break; else echo "$1 is not a valid option"; exit 1; fi;;
@@ -130,5 +131,6 @@ dcmodify -nb -i $FULL_TAG="$DESCRIPTOR_TAG" "$FILEPATH"
 #echo "ENCRYPTION PASSWORD: $ENC_PASSWORD"
 #echo "UNIQUE_ID: $UNIQUE_ID"
 #echo "Dumping key data to keyfile $KEYFILE"
-echo "$UNIQUE_ID,$ENC_PASSWORD" >> $KEYFILE
-
+if [ $IGNORE_PW != 1 ]; then
+	echo "$UNIQUE_ID,$ENC_PASSWORD" >> $KEYFILE
+fi
