@@ -79,25 +79,25 @@ for TAG in "${TAGS[@]}"; do
                 TAG=`echo $LONG_TAG | awk '{ gsub("\\\.",")[0].("); print $0}'`
                 TAG="("$TAG")"
                 echo "LONG TAG IS NOW:" $TAG
+                DATA=`echo $DATA_EXISTS | awk -F'[][]' '{print $2}' | openssl enc -e -base64 -A -aes-256-ctr -pass pass:$TEMP_ENC_PASSWORD`
         else
                 echo "TAG" $TAG "is short"
                 DATA_EXISTS=`dcmdump +L +P "$TAG" "$FILEPATH" +p | grep -v -e '([a-f,A-F,0-9]\{4\},[a-f,A-F,0-9]\{4\})\.([a-f,A-F,0-9]\{4\},[a-f,A-F,0-9]\{4\})'`
-		echo "DATA_EXISTS:" $DATA_EXISTS
+                echo "DATA_EXISTS:" $DATA_EXISTS
+                DATA=`dcmdump +L +P "$TAG" "$FILEPATH" +p | grep -v -e '([a-f,A-F,0-9]\{4\},[a-f,A-F,0-9]\{4\})\.([a-f,A-F,0-9]\{4\},[a-f,A-F,0-9]\{4\})' | awk -F'[][]' '{print $2}'`
+                echo "DATA:" "$DATA"
+                if [ -z "$DATA" ]; then
+                DATA=`dcm2xml "$FILEPATH" | grep "tag=\"${TAG}\"" | awk  'BEGIN {RS="<[^>]+>"} {print $0}' | openssl enc -e -base64 -A -aes-256-ctr -pass pass:$TEMP_ENC_PASSWORD`
+                else
+                DATA=`echo "$DATA" | openssl enc -e -base64 -A -aes-256-ctr -pass pass:$TEMP_ENC_PASSWORD`
+                fi
         fi
 # Check if tag is empty
         if [ -z "$DATA_EXISTS"  ] || [[ $(echo $DATA_EXISTS | grep -e '([0-9a-fA-F]\{4\},[0-9a-fA-F]\{4\})\s.\{2\}\s(no value available)\s#') ]]; then
                 echo "TAG EMPTY $TAG"
                 continue;
         fi
-        DATA=`dcmdump +L +P "$TAG" "$FILEPATH" +p | grep -v -e '([a-f,A-F,0-9]\{4\},[a-f,A-F,0-9]\{4\})\.([a-f,A-F,0-9]\{4\},[a-f,A-F,0-9]\{4\})' | awk -F'[][]' '{print $2}'`
-	echo "DATA:" "$DATA"
-        if [ -z "$DATA" ]; then
-                DATA=`dcm2xml "$FILEPATH" | grep "tag=\"${TAG}\"" | awk  'BEGIN {RS="<[^>]+>"} {print $0}' | openssl enc -e -base64 -A -aes-256-ctr -pass pass:$TEMP_ENC_PASSWORD`
-        else
-#CAN BE SLIGHTLY SHORTER!!!
-		echo "TEST:" "$DATA"
-                DATA=`echo "$DATA" | openssl enc -e -base64 -A -aes-256-ctr -pass pass:$TEMP_ENC_PASSWORD`
-        fi
+
 #        echo "TAG $TAG OK!!!"
         FULL_TAG="$PRIVATE_TAG_BLOCK,$PRIVATE_CREATOR$HEX_INCREMENT"
 #       FULL_TAG="$PRIVATE_TAG_BLOCK,$FULL_TAG"
