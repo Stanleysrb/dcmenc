@@ -2,13 +2,12 @@
 
 # Get command options and process them:
 
-while getopts "f:ap:e:u:h" arg; do
+while getopts "f:p:e:h" arg; do
     case "$arg" in
-        a ) TAGS=1;;
         f ) FOLDER_PATH="${OPTARG}";;
         p ) PRIVATE_TAG_BLOCK="${OPTARG}";;
         e ) ENC_PASSWORD="${OPTARG}";;
-        h ) echo "HELP TEXT GOES HERE, WILL BE DEFINED WHEN ALL OTHER THINGS ARE DONE"; exit 1;;
+        h ) echo "The following parameters are supported: -f FOLDER_PATH (Folder containing study you want to encrypt) -p PRIVATE_TAG_BLOCK (Custom Private Tag Block) -e ENC_PASSWORD (Custom 192 character password)"; exit 1;;
         -- ) ;;
         * ) if [ -z "$1" ]; then break; else echo "$1 is not a valid option"; exit 1; fi;;
     esac
@@ -20,7 +19,7 @@ if [ -z "$FOLDER_PATH" ]; then
         echo "No DICOM folder path specified. Exiting"; exit 1;
 else
 	while IFS= read -r -d $'\0' file; do
-		FILES[i]="$file"        # or however you want to process each file
+		FILES[i]="$file"
 		i=$((i+1))
 	done < <(find "$FOLDER_PATH" -name "*.dcm" -print0)        
 fi
