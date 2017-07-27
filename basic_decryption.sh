@@ -42,22 +42,26 @@ UNIQUE_ID=`echo $LOCATOR_DATA | awk -F',' '{print $1}'`
 TAGS=`echo $LOCATOR_DATA | awk -F',' '{ st = index($0,",");print substr($0,st+1)}'`
 
 # Check whether password file has been supplied, searching for unique ID, and setting ENC_PASSWORD.
-if [ ! -z "$PASSWORD_FILE" ]; then
-        echo "USING CUSTOM PASSWORD FILE";
-else
-        echo "Using default password file"
-        PASSWORD_FILE="$KEYFILE"
+
+if [ -z "$ENC_PASSWORD" ];then
+    if [ -z "$PASSWORD_FILE" ]; then
+            echo "Using default password file"
+            PASSWORD_FILE="$KEYFILE"
+	else
+	    echo "USING CUSTOM PASSWORD FILE";
+    fi
+    if [ -z "$KEYFILE" ]; then
+            echo "Keyfile variable not found in .bashrc"
+            exit 1;
+    else
+            echo "Searching for the following UNIQUE_ID $UNIQUE_ID"
+            ENC_PASSWORD=`grep "$UNIQUE_ID" "$PASSWORD_FILE" | awk -F',' '{print $2}'`
+            if [ -z "$ENC_PASSWORD" ]; then
+                    echo "Unable to find password for this file, please specify password manually"; exit 1;
+            fi
+    fi
 fi
-if [ -z "$KEYFILE" ]; then
-        echo "Keyfile variable not found in .bashrc"
-        exit 1;
-else
-        echo "Searching for the following UNIQUE_ID $UNIQUE_ID"
-        ENC_PASSWORD=`grep "$UNIQUE_ID" "$PASSWORD_FILE" | awk -F',' '{print $2}'`
-        if [ -z "$ENC_PASSWORD" ]; then
-                echo "Unable to find password for this file, please specify password manually"; exit 1;
-        fi
-fi
+
 # Put password file variable , possibly in variables file
 
 if [ ${#ENC_PASSWORD} = 192 ]; then
@@ -72,6 +76,8 @@ else
 fi
 echo "ALLOWED LEVEL:" $ALLOWED_LEVEL
 
+LOCATOR_DATA="$UNIQUE_ID,"
+
 ARRAY=($TAGS)
 echo ${ARRAY[*]}
 for TAG in "${ARRAY[@]}"; do
@@ -84,6 +90,7 @@ for TAG in "${ARRAY[@]}"; do
         echo "CONFIDENTIALITY_LEVEL: " $CONFIDENTIALITY_LEVEL
         if [ $CONFIDENTIALITY_LEVEL -gt $ALLOWED_LEVEL ]; then 
             echo "No password for this confidentiality level, skipping"
+	    LOCATOR_DATA="$LOCATOR_DATA$TAG "
             continue;
         fi
         TEMP_ENC_PASSWORD=`echo $ENC_PASSWORD | cut -c $(($CONFIDENTIALITY_LEVEL*64-63))-$(($CONFIDENTIALITY_LEVEL*64))`
@@ -94,6 +101,11 @@ for TAG in "${ARRAY[@]}"; do
         dcmodify -nb -i "$FULL_TAG"="$DECRYPTEDDATA" "$FILEPATH"
         dcmodify -nb -e $TAG "$FILEPATH"
 done
-dcmodify -nb -e $FULL_CREATOR "$FILEPATH"
-dcmodify -nb -e $PRIVATE_TAG_LOCATION "$FILEPATH"
+
+if [ $ALLOWED_LEVEL = 3 ]; then
+	dcmodify -nb -e $FULL_CREATOR "$FILEPATH"
+	dcmodify -nb -e $PRIVATE_TAG_LOCATION "$FILEPATH"
+else
+	dcmodify -nb -m $PRIVATE_TAG_LOCATION="$LOCATOR_DATA" "$FILEPATH"
+fi
 
