@@ -1,3 +1,4 @@
+
 #!/bin/bash
 
 # Get command options and process them:
@@ -8,7 +9,7 @@ while getopts "f:p:e:d:h" arg; do
         p ) PRIVATE_TAG_BLOCK="${OPTARG}";;
         e ) ENC_PASSWORD="${OPTARG}";;
         d ) PASSWORD_FILE="${OPTARG}";;
-        h ) echo "HELP TEXT GOES HERE, WILL BE DEFINED WHEN ALL OTHER THINGS ARE DONE"; exit 1;;
+        h ) echo "The following parameters are supported: -f FILEPATH (File you want to decrypt) -p PRIVATE_TAG_BLOCK (Custom Private Tag Block) -e ENC_PASSWORD (Custom 64(LVL1), 128(LVL1,LVL2), 192(LVL1,LVL2,LVL3) character password) -p PASSWORD_FILE (Custom Password File)"; exit 1;;
         -- ) ;;
         * ) if [ -z "$1" ]; then break; else echo "$1 is not a valid option. Use -h for help."; exit 1; fi;;
     esac
@@ -32,9 +33,8 @@ fi
 
 PRIVATE_CREATOR=99
 FULL_CREATOR="$PRIVATE_TAG_BLOCK,00$PRIVATE_CREATOR"
-PRIVATE_TAG_LOCATION="$PRIVATE_TAG_BLOCK,$PRIVATE_CREATOR"00""
-echo $PRIVATE_TAG_LOCATION
-LOCATOR_DATA=`dcmdump +L +P "$PRIVATE_TAG_LOCATION" "$FILEPATH" | awk -F'[][]' '{print $2}'`
+LOCATOR_LOCATION="$PRIVATE_TAG_BLOCK,$PRIVATE_CREATOR"00""
+LOCATOR_DATA=`dcmdump +L +P "$LOCATOR_LOCATION" "$FILEPATH" | awk -F'[][]' '{print $2}'`
 if [ -z "$LOCATOR_DATA" ]; then
         echo "No Data in private tag block. Please manually specify if you have used custom Private block while encrypting. Exiting"; exit 1;
 fi
@@ -47,8 +47,8 @@ if [ -z "$ENC_PASSWORD" ];then
     if [ -z "$PASSWORD_FILE" ]; then
             echo "Using default password file"
             PASSWORD_FILE="$KEYFILE"
-	else
-	    echo "USING CUSTOM PASSWORD FILE";
+        else
+            echo "USING CUSTOM PASSWORD FILE";
     fi
     if [ -z "$KEYFILE" ]; then
             echo "Keyfile variable not found in .bashrc"
@@ -65,47 +65,42 @@ fi
 # Put password file variable , possibly in variables file
 
 if [ ${#ENC_PASSWORD} = 192 ]; then
-        ALLOWED_LEVEL=3
+        DECRYPTION_LEVEL=3
 elif [ ${#ENC_PASSWORD} = 128 ]; then
-        ALLOWED_LEVEL=2
+        DECRYPTION_LEVEL=2
 elif [ ${#ENC_PASSWORD} = 64 ]; then
-        ALLOWED_LEVEL=1
+        DECRYPTION_LEVEL=1
 else
         echo "BAD PASSWORD LENGTH, EXITING!"
         exit;
 fi
-echo "ALLOWED LEVEL:" $ALLOWED_LEVEL
+echo "LEVEL OF DECRYPTION:" $DECRYPTION_LEVEL
 
 LOCATOR_DATA="$UNIQUE_ID,"
 
-ARRAY=($TAGS)
-echo ${ARRAY[*]}
-for TAG in "${ARRAY[@]}"; do
-        echo $TAG
+TAGS_ARRAY=($TAGS)
+echo "List of tags to process:" ${TAGS_ARRAY[*]}
+for TAG in "${TAGS_ARRAY[@]}"; do
         DATA=`dcmdump +L +P "$TAG" "$FILEPATH" | cut -c 17- | awk -F'][[:space:]]+#[[:space:]]' '{print $1}'`
         ENCRYPTEDDATA=`echo $DATA | awk -F'[,]' '{print $NF}'`
-        echo "DATA IS:" $DATA
-        echo "ENCRYPTED DATA IS:" $ENCRYPTEDDATA
+        echo "Processing tag:" $TAG " - with data:" $DATA
         CONFIDENTIALITY_LEVEL="${DATA:0:1}"
         echo "CONFIDENTIALITY_LEVEL: " $CONFIDENTIALITY_LEVEL
-        if [ $CONFIDENTIALITY_LEVEL -gt $ALLOWED_LEVEL ]; then 
+        if [ $CONFIDENTIALITY_LEVEL -gt $DECRYPTION_LEVEL ]; then
             echo "No password for this confidentiality level, skipping"
-	    LOCATOR_DATA="$LOCATOR_DATA$TAG "
+            LOCATOR_DATA="$LOCATOR_DATA$TAG "
             continue;
         fi
         TEMP_ENC_PASSWORD=`echo $ENC_PASSWORD | cut -c $(($CONFIDENTIALITY_LEVEL*64-63))-$(($CONFIDENTIALITY_LEVEL*64))`
         DECRYPTEDDATA=`echo $ENCRYPTEDDATA | openssl enc -d -base64 -A -aes-256-ctr -pass pass:$TEMP_ENC_PASSWORD`
-        echo "DECRYPTED DATA IS: $DECRYPTEDDATA"
         FULL_TAG=`echo $DATA | awk 'BEGIN{FS=OFS=","}{NF--;print}' | cut -c 3-`
-        echo "FULL TAG IS:" $FULL_TAG
         dcmodify -nb -i "$FULL_TAG"="$DECRYPTEDDATA" "$FILEPATH"
         dcmodify -nb -e $TAG "$FILEPATH"
 done
 
-if [ $ALLOWED_LEVEL = 3 ]; then
-	dcmodify -nb -e $FULL_CREATOR "$FILEPATH"
-	dcmodify -nb -e $PRIVATE_TAG_LOCATION "$FILEPATH"
+if [ $DECRYPTION_LEVEL = 3 ]; then
+        dcmodify -nb -e $FULL_CREATOR "$FILEPATH"
+        dcmodify -nb -e $LOCATOR_LOCATION "$FILEPATH"
 else
-	dcmodify -nb -m $PRIVATE_TAG_LOCATION="$LOCATOR_DATA" "$FILEPATH"
+        dcmodify -nb -m $LOCATOR_LOCATION="$LOCATOR_DATA" "$FILEPATH"
 fi
-
