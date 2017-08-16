@@ -7,7 +7,8 @@ while getopts "f:p:e:h" arg; do
         f ) FOLDER_PATH="${OPTARG}";;
         p ) PRIVATE_TAG_BLOCK="${OPTARG}";;
         e ) ENC_PASSWORD="${OPTARG}";;
-        h ) echo "The following parameters are supported: -f FOLDER_PATH (Folder containing study you want to encrypt) -p PRIVATE_TAG_BLOCK (Custom Private Tag Block) -e ENC_PASSWORD (Custom 192 character password)"; exit 1;;
+	d ) KEYFILE="${OPTARG}";;
+        h ) echo "The following parameters are supported: -f FOLDER_PATH (Folder containing study you want to encrypt) -p PRIVATE_TAG_BLOCK (Custom Private Tag Block) -e ENC_PASSWORD (Custom 64(LVL1), 128(LVL1,LVL2), 192(LVL1,LVL2,LVL3) character password)"; exit 1;;
         -- ) ;;
         * ) if [ -z "$1" ]; then break; else echo "$1 is not a valid option"; exit 1; fi;;
     esac
@@ -33,8 +34,11 @@ fi
 
 if [ ! -z "$ENC_PASSWORD" ]; then
 	INPUT_ARGS="$INPUT_ARGS -e $ENC_PASSWORD"
+else 
+	if [ ! -z "$KEYFILE" ]; then
+        	INPUT_ARGS="$INPUT_ARGS -d $KEYFILE"
+	fi
 fi
-
 
 if [ -z "$FILES" ]; then
 	echo "No DICOM files in folder path which was specified. Exiting"; exit 1;
