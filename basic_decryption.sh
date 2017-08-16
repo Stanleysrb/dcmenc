@@ -9,7 +9,7 @@ while getopts "f:p:e:d:h" arg; do
         p ) PRIVATE_TAG_BLOCK="${OPTARG}";;
         e ) ENC_PASSWORD="${OPTARG}";;
         d ) PASSWORD_FILE="${OPTARG}";;
-        h ) echo "The following parameters are supported: -f FILEPATH (File you want to decrypt) -p PRIVATE_TAG_BLOCK (Custom Private Tag Block) -e ENC_PASSWORD (Custom 64(LVL1), 128(LVL1,LVL2), 192(LVL1,LVL2,LVL3) character password) -p PASSWORD_FILE (Custom Password File)"; exit 1;;
+        h ) echo "The following parameters are supported: -f FILEPATH (File you want to decrypt) -p PRIVATE_TAG_BLOCK (Custom Private Tag Block) -e ENC_PASSWORD (Custom 64(LVL1), 128(LVL1,LVL2), 192(LVL1,LVL2,LVL3) character password) -d PASSWORD_FILE (Custom Password File)"; exit 1;;
         -- ) ;;
         * ) if [ -z "$1" ]; then break; else echo "$1 is not a valid option. Use -h for help."; exit 1; fi;;
     esac

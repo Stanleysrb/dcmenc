@@ -40,7 +40,7 @@ ENC_PASSWORD=`cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 192 | head -n 1`
 echo "$UNIQUE_ID,$ENC_PASSWORD" >> $KEYFILE
 INPUT_ARGS="$INPUT_ARGS -u $UNIQUE_ID -e $ENC_PASSWORD"
 
-find "$FOLDER_PATH" -name "*.dcm" | parallel --joblog $JOBLOG --bar -j 4 /bin/bash $DCMENCHOME/basic_encryption.sh $INPUT_ARGS -f 
+find "$FOLDER_PATH" -name "*.dcm" | parallel --joblog $JOBLOG --bar -j 2 /bin/bash $DCMENCHOME/basic_encryption.sh $INPUT_ARGS -f 
 
 fi
 
