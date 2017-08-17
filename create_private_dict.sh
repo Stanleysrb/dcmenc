@@ -1,6 +1,6 @@
 #!/bin/bash
 
-while getopts "f:ap:e:u:h" arg; do
+while getopts "f:p:h" arg; do
     case "$arg" in
         f ) FILEPATH="${OPTARG}";;
         p ) PRIVATE_TAG_BLOCK="${OPTARG}";;
