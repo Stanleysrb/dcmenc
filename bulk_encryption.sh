@@ -2,7 +2,7 @@
 
 # Get command options and process them:
 
-while getopts "f:p:h" arg; do
+while getopts "f:p:e:u:h" arg; do
     case "$arg" in
         f ) FOLDER_PATH="${OPTARG}";;
         p ) PRIVATE_TAG_BLOCK="${OPTARG}";;
