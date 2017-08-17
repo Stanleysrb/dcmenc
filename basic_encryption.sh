@@ -56,7 +56,7 @@ EXISTING_DATA=`dcmdump +L "$FILEPATH" | grep "($PRIVATE_TAG_BLOCK,$PRIVATE_CREAT
 NEW_TAGS=""
 OLD_TAGS=""
 NEW_TAGS_DATA=""
-dcmodify -i $FULL_CREATOR="DICOM_ENCRYPTION" "$FILEPATH"
+dcmodify -nb -i $FULL_CREATOR="DICOM_ENCRYPTION" "$FILEPATH"
 for TAG in "${TAGS[@]}"; do
         CONFIDENTIALITY_LEVEL=`echo $TAG | cut -c 1`
         TAG=`echo $TAG | cut -c 3-`
