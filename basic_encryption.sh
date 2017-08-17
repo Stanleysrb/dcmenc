@@ -35,7 +35,10 @@ fi
 
 if [ -z "$ENC_PASSWORD" ]; then
         ENC_PASSWORD=`cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 192 | head -n 1`
+elif [ ${#ENC_PASSWORD} != 192 ]; then
+	echo "BAD PASSWORD LENGTH, EXITING"
 fi
+
 # Check whether Private Tag block has been manually specified:
 if [ -z "$PRIVATE_TAG_BLOCK" ]; then
         PRIVATE_TAG_BLOCK="0909"
