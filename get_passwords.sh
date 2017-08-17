@@ -2,12 +2,13 @@
 
 # Get command options and process them:
 
-while getopts "d:l:u:" arg; do
+while getopts "d:l:u:h" arg; do
     case "$arg" in
         d ) PASSWORD_FILE="${OPTARG}";;
         l ) CONFIDENTIALITY_LEVEL="${OPTARG}";;
         u ) UNIQUE_ID="${OPTARG}";;
-        -- ) ;;
+	h ) echo "The following parameters are supported: -d PASSWORD_FILE (File containing decryption password) -l CONFIDENTIALITY_LEVEL (The level of confidentiality you want to extract password for) -u UNIQUE_ID (The unique identifier of a file you need password for)"; exit 1;;
+	-- ) ;;
         * ) if [ -z "$1" ]; then break; else echo "$1 is not a valid option."; exit 1; fi;;
     esac
 done
