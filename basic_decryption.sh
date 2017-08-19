@@ -103,4 +103,4 @@ if [ $DECRYPTION_LEVEL = 3 ]; then
         dcmodify -nb -e $LOCATOR_LOCATION "$FILEPATH"
 else
         dcmodify -nb -m $LOCATOR_LOCATION="$LOCATOR_DATA" "$FILEPATH"
-fi
+fi1
