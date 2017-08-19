@@ -82,7 +82,7 @@ TAGS_ARRAY=($TAGS)
 echo "List of tags to process:" ${TAGS_ARRAY[*]}
 for TAG in "${TAGS_ARRAY[@]}"; do
         DATA=`dcmdump +L +P "$TAG" "$FILEPATH" | cut -c 17- | awk -F'][[:space:]]+#[[:space:]]' '{print $1}'`
-        ENCRYPTEDDATA=`echo $DATA | awk -F'[,]' '{print $NF}'`
+        ENCRYPTED_DATA=`echo $DATA | awk -F'[,]' '{print $NF}'`
         echo "Processing tag:" $TAG " - with data:" $DATA
         CONFIDENTIALITY_LEVEL="${DATA:0:1}"
         echo "CONFIDENTIALITY_LEVEL: " $CONFIDENTIALITY_LEVEL
@@ -92,9 +92,9 @@ for TAG in "${TAGS_ARRAY[@]}"; do
             continue;
         fi
         TEMP_ENC_PASSWORD=`echo $ENC_PASSWORD | cut -c $(($CONFIDENTIALITY_LEVEL*64-63))-$(($CONFIDENTIALITY_LEVEL*64))`
-        DECRYPTEDDATA=`echo $ENCRYPTEDDATA | openssl enc -d -base64 -A -aes-256-ctr -pass pass:$TEMP_ENC_PASSWORD`
+        DECRYPTED_DATA=`echo $ENCRYPTED_DATA | openssl enc -d -base64 -A -aes-256-ctr -pass pass:$TEMP_ENC_PASSWORD`
         FULL_TAG=`echo $DATA | awk 'BEGIN{FS=OFS=","}{NF--;print}' | cut -c 3-`
-        dcmodify -nb -i "$FULL_TAG"="$DECRYPTEDDATA" "$FILEPATH"
+        dcmodify -nb -i "$FULL_TAG"="$DECRYPTED_DATA" "$FILEPATH"
         dcmodify -nb -e $TAG "$FILEPATH"
 done
 
