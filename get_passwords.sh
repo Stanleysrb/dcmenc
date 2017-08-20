@@ -20,6 +20,11 @@ else
         echo "Using default password file"
         PASSWORD_FILE="$KEYFILE"
 fi
+
+if [ -z "$CONFIDENTIALITY_LEVEL" ]; then
+	CONFIDENTIALITY_LEVEL=3
+fi
+
 if [ -z "$KEYFILE" ]; then
         echo "Keyfile variable not found in .bashrc"
         exit 1;
